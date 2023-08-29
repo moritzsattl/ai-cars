@@ -2,90 +2,65 @@ package com.mygdx.game;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.*;
+import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.math.Vector3;
-import com.badlogic.gdx.utils.ScreenUtils;
-import com.badlogic.gdx.utils.TimeUtils;
-import sun.tools.jconsole.JConsole;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class CarsAIGame extends ApplicationAdapter {
 
-	private final float ACCELERATION_FACTOR = 20f;
-	private Texture carImage;
-	private Car car;
+	private RacingCar car;
 
-	private OrthographicCamera camera;
-	private SpriteBatch batch;
+	private Stage stage;
 
-
-	private float lastUpdateTime = 0;
-
+	private RaceCourse raceCourse;
 
 	@Override
 	public void create () {
-		// load the images for the droplet and the bucket, 64x64 pixels each
-		carImage = new Texture(Gdx.files.internal("minimalist-car.png"));
 
-		camera = new OrthographicCamera();
-		camera.setToOrtho(false, 800, 480);
+		car = new RacingCar(350, 50, -90, 60);
+		raceCourse = new RaceCourse(car);
 
-		batch = new SpriteBatch();
+		stage = new Stage(new FitViewport(1920,1080));
+		Gdx.input.setInputProcessor(stage);
 
-		car = new Car();
-		car.x = 800 / 2 - 64 / 2;
-		car.y = 20;
-		car.width = 64;
-		car.height = 64;
+		stage.addActor(raceCourse);
+		stage.addActor(car);
+		stage.setKeyboardFocus(car);
 
 
+	}
+
+	public void resize (int width, int height) {
+		// See below for what true means.
+		stage.getViewport().update(width, height, true);
 	}
 
 	@Override
 	public void render () {
-		ScreenUtils.clear(0, 0, 0.2f, 1);
-		camera.update();
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		Gdx.gl.glClearColor(0, 0, 0.2f, 1);
 
 
-		batch.setProjectionMatrix(camera.combined);
-		batch.begin();
-		batch.draw(carImage, car.x, car.y,64,64);
-		batch.end();
+		float delta = Math.min( Gdx.graphics.getDeltaTime(), 1/30f);
+		car.update(delta);
+		stage.act(delta);
+		stage.draw();
 
-		checkKeyPressed();
-
-
-
-
-
-		if(TimeUtils.nanoTime() - lastUpdateTime > 1000000000){
-			lastUpdateTime = TimeUtils.nanoTime();
-
-			car.alterPos(car.getVel());
-			car.alterVel(car.getAcc());
-			//car.alterAcc(.99f);
-			System.out.println(car);
-		}
-
-		if(car.x < 0) car.x = 0;
-		if(car.x > 800 - 64) car.x = 800 - 64;
-
+		//System.out.println(car.carBody.velocity.len());
 	}
 
-	private void checkKeyPressed() {
-		if(Gdx.input.isKeyPressed(Input.Keys.UP)) {
-			System.out.println("Key UP pressed");
-			car.getAcc().y -= ACCELERATION_FACTOR;
-		}
-
-	}
 
 	@Override
 	public void dispose () {
-		carImage.dispose();
-		batch.dispose();
+		stage.dispose();
+	}
+
+	static public Vector2 vecFromAngle(float angle){
+		return new Vector2((float) Math.cos(angle), (float) Math.sin(angle));
 	}
 
 }

@@ -8,7 +8,7 @@ import com.mygdx.game.CarsAIGame;
 public class DesktopLauncher {
 	public static void main (String[] arg) {
 		Lwjgl3ApplicationConfiguration config = new Lwjgl3ApplicationConfiguration();
-		config.setWindowedMode(800, 480);
+		config.setWindowedMode(1920, 1080);
 		config.setForegroundFPS(60);
 		config.setTitle("CarsGDX");
 		new Lwjgl3Application(new CarsAIGame(), config);
